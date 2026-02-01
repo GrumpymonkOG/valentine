@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Be My Valentine 💖</title>
+
   <style>
     body {
       height: 100vh;
@@ -12,7 +13,7 @@
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       overflow: hidden;
     }
 
@@ -32,7 +33,7 @@
 
     .buttons {
       position: relative;
-      height: 120px;
+      height: 140px;
     }
 
     button {
@@ -42,7 +43,7 @@
       border-radius: 30px;
       cursor: pointer;
       position: absolute;
-      transition: transform 0.2s ease;
+      user-select: none;
     }
 
     #yes {
@@ -57,7 +58,7 @@
       background: #adb5bd;
       color: #333;
       left: 50%;
-      top: 60px;
+      top: 70px;
       transform: translateX(-50%);
     }
 
@@ -70,6 +71,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h1>Will you be my Valentine, Jia? 💘</h1>
@@ -83,41 +85,45 @@
     const noBtn = document.getElementById('no');
     const yesBtn = document.getElementById('yes');
 
-    let noX = window.innerWidth / 2;
-    let noY = window.innerHeight / 2;
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+    let vx = 0;
+    let vy = 0;
 
-    noBtn.addEventListener('mousemove', (e) => {
+    document.addEventListener('mousemove', (e) => {
       const rect = noBtn.getBoundingClientRect();
-      const btnCenterX = rect.left + rect.width / 2;
-      const btnCenterY = rect.top + rect.height / 2;
+      const bx = rect.left + rect.width / 2;
+      const by = rect.top + rect.height / 2;
 
-      const dx = btnCenterX - e.clientX;
-      const dy = btnCenterY - e.clientY;
+      const dx = bx - e.clientX;
+      const dy = by - e.clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
 
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < 120) {
-        noX += dx * 0.3;
-        noY += dy * 0.3;
-
-        noX = Math.max(20, Math.min(window.innerWidth - 120, noX));
-        noY = Math.max(20, Math.min(window.innerHeight - 60, noY));
-
-        noBtn.style.left = noX + 'px';
-        noBtn.style.top = noY + 'px';
+      if (dist < 180) {
+        const force = (180 - dist) / 180;
+        vx += (dx / dist) * force * 4;
+        vy += (dy / dist) * force * 4;
       }
-    });
-      const y = Math.random() * (window.innerHeight - 60);
+
+      vx *= 0.88; // smooth physics
+      vy *= 0.88;
+
+      x += vx;
+      y += vy;
+
+      x = Math.max(20, Math.min(window.innerWidth - 140, x));
+      y = Math.max(20, Math.min(window.innerHeight - 80, y));
+
       noBtn.style.left = x + 'px';
       noBtn.style.top = y + 'px';
     });
 
     yesBtn.addEventListener('click', () => {
       document.body.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#ff9a9e,#fad0c4);font-family:Arial;">
-          <h1 style="color:#e63946;font-size:42px;">Yay!!! 💕🥰</h1>
-        </div>
-      `;
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;
+        background:linear-gradient(135deg,#ff9a9e,#fad0c4);font-family:Arial;">
+          <h1 style="font-size:42px;color:#e63946;">Yay Jia!!! 💕🥰</h1>
+        </div>`;
     });
   </script>
 </body>
