@@ -82,14 +82,15 @@
   <script>
   const noBtn = document.getElementById('no');
   const yesBtn = document.getElementById('yes');
+  const container = document.querySelector('.buttons');
 
-  // Start position (inside the card area)
+  // Initial position inside container
   let noX = noBtn.offsetLeft;
   let noY = noBtn.offsetTop;
 
-  // Smooth velocity
   let vx = 0;
   let vy = 0;
+  let avoidanceLevel = 0; // increases the more you chase
 
   document.addEventListener('mousemove', (e) => {
     const rect = noBtn.getBoundingClientRect();
@@ -100,22 +101,35 @@
     const dy = by - e.clientY;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    // Only react when cursor is close
-    if (dist < 150) {
-      const force = (150 - dist) / 150;
-      vx += (dx / dist) * force * 6;
-      vy += (dy / dist) * force * 6;
+    // Cursor close → button reacts
+    if (dist < 160) {
+      avoidanceLevel = Math.min(avoidanceLevel + 0.05, 3); // panic builds
+
+      const force = (160 - dist) / 160;
+      const speed = 2 + avoidanceLevel * 1.8; // slow at first, faster later
+
+      vx += (dx / dist) * force * speed;
+      vy += (dy / dist) * force * speed;
+
+      // Nervous wiggle when cornered
+      if (noX < 10 || noY < 10 ||
+          noX > container.clientWidth - noBtn.offsetWidth - 10 ||
+          noY > container.clientHeight - noBtn.offsetHeight - 10) {
+        vx += (Math.random() - 0.5) * 2;
+        vy += (Math.random() - 0.5) * 2;
+      }
+    } else {
+      avoidanceLevel *= 0.98; // calm down when not chased
     }
 
-    // Friction for smooth movement
+    // Friction
     vx *= 0.85;
     vy *= 0.85;
 
     noX += vx;
     noY += vy;
 
-    // Keep the button INSIDE the card
-    const container = document.querySelector('.buttons');
+    // Keep inside container
     const maxX = container.clientWidth - noBtn.offsetWidth;
     const maxY = container.clientHeight - noBtn.offsetHeight;
 
@@ -124,7 +138,22 @@
 
     noBtn.style.left = noX + 'px';
     noBtn.style.top = noY + 'px';
+
+    // If chased too much → surrender
+    if (avoidanceLevel > 2.6) {
+      noBtn.textContent = 'Okay fine 😳';
+      noBtn.style.background = '#ffb3c1';
+    }
   });
+
+  // Mobile support: touch behaves like mouse
+  document.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    document.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    }));
+  }, { passive: true });
 
   yesBtn.addEventListener('click', () => {
     document.body.innerHTML = `
